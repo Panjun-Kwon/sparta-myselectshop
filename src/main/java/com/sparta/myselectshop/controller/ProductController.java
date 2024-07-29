@@ -1,8 +1,10 @@
 package com.sparta.myselectshop.controller;
 
 import com.sparta.myselectshop.dto.*;
+import com.sparta.myselectshop.security.*;
 import com.sparta.myselectshop.service.*;
 import lombok.*;
+import org.springframework.security.core.annotation.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -15,9 +17,9 @@ public class ProductController {
     private final ProductService productService;
 
     @PostMapping("/products")
-    public ProductResponseDto createProduct(@RequestBody ProductRequestDto requestDto) {
+    public ProductResponseDto createProduct(@RequestBody ProductRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        return productService.createProduct(requestDto);
+        return productService.createProduct(requestDto, userDetails.getUser());
     }
 
     @PutMapping("/products/{id}")
@@ -26,8 +28,13 @@ public class ProductController {
     }
 
     @GetMapping("/products")
-    public List<ProductResponseDto> getProducts() {
-        return productService.getProducts();
+    public List<ProductResponseDto> getProducts(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return productService.getProducts(userDetails.getUser());
+    }
+
+    @GetMapping("/admin/products")
+    public List<ProductResponseDto> getAllProducts() {
+        return productService.getAllProducts();
     }
 
 }
