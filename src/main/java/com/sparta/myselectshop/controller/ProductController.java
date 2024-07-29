@@ -4,6 +4,7 @@ import com.sparta.myselectshop.dto.*;
 import com.sparta.myselectshop.security.*;
 import com.sparta.myselectshop.service.*;
 import lombok.*;
+import org.springframework.data.domain.*;
 import org.springframework.security.core.annotation.*;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,13 +29,14 @@ public class ProductController {
     }
 
     @GetMapping("/products")
-    public List<ProductResponseDto> getProducts(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return productService.getProducts(userDetails.getUser());
-    }
-
-    @GetMapping("/admin/products")
-    public List<ProductResponseDto> getAllProducts() {
-        return productService.getAllProducts();
+    public Page<ProductResponseDto> getProducts(
+            @RequestParam("page") int page,
+            @RequestParam("size") int size,
+            @RequestParam("sortBy") String sortBy,
+            @RequestParam("isAsc") boolean isAsc,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return productService.getProducts(userDetails.getUser(),
+                page-1, size, sortBy, isAsc);
     }
 
 }

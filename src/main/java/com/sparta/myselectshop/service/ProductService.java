@@ -5,6 +5,7 @@ import com.sparta.myselectshop.entity.*;
 import com.sparta.myselectshop.naver.dto.*;
 import com.sparta.myselectshop.repository.*;
 import lombok.*;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.*;
 import org.springframework.transaction.annotation.*;
 
@@ -37,15 +38,23 @@ public class ProductService {
         return new ProductResponseDto(product);
     }
 
-    public List<ProductResponseDto> getProducts(User user) {
-        List<Product> productList = productRepository.findAllByUser(user);
-        List<ProductResponseDto> responseDtoList = new ArrayList<>();
+    public Page<ProductResponseDto> getProducts(User user, int page, int size, String sortBy, boolean isAsc) {
 
-        for (Product product : productList) {
-            responseDtoList.add(new ProductResponseDto(product));
+        Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Sort sort = Sort.by(direction, sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        UserRoleEnum userRoleEnum = user.getRole();
+
+        Page<Product> productList;
+
+        if (userRoleEnum == UserRoleEnum.USER) {
+            productList = productRepository.findAllByUser(user, pageable);
+        } else {
+            productList = productRepository.findAll(pageable);
         }
 
-        return responseDtoList;
+        return productList.map(ProductResponseDto::new);
     }
 
     @Transactional
@@ -56,14 +65,4 @@ public class ProductService {
         product.updateByItemDto(itemDto);
     }
 
-    public List<ProductResponseDto> getAllProducts() {
-        List<Product> productList = productRepository.findAll();
-        List<ProductResponseDto> responseDtoList = new ArrayList<>();
-
-        for (Product product : productList) {
-            responseDtoList.add(new ProductResponseDto(product));
-        }
-
-        return responseDtoList;
-    }
 }
