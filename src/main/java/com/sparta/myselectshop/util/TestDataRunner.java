@@ -19,7 +19,7 @@ import java.util.List;
 
 import static com.sparta.myselectshop.service.ProductService.MIN_MY_PRICE;
 
-@Component
+//@Component
 public class TestDataRunner implements ApplicationRunner {
 
     @Autowired
