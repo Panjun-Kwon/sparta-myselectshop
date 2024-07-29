@@ -16,6 +16,9 @@ import java.util.*;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final FolderRepository folderRepository;
+    private final ProductFolderRepository productFolderRepository;
+
     public static final int MIN_MY_PRICE = 100;
 
     public ProductResponseDto createProduct(ProductRequestDto requestDto, User user) {
@@ -66,4 +69,25 @@ public class ProductService {
         product.updateByItemDto(itemDto);
     }
 
+    public void addFolder(Long productId, Long folderId, User user) {
+
+        Product product = productRepository.findById(productId).orElseThrow(() ->
+                new NullPointerException("해당 상품이 존재하지 않습니다."));
+
+        Folder folder = folderRepository.findById(folderId).orElseThrow(() ->
+                new NullPointerException("해당 폴더가 존재하지 않습니다."));
+
+        if (!product.getUser().getId().equals(user.getId()) ||
+        !folder.getUser().getId().equals(user.getId())) {
+            throw new IllegalArgumentException("회원님의 관심 상품이 아니거나, 회원님의 폴더가 아닙니다.");
+        }
+
+        Optional<ProductFolder> overlapFolder = productFolderRepository.findByProductAndFolder(product, folder);
+
+        if (overlapFolder.isPresent()) {
+            throw new IllegalArgumentException("중복된 폴더입니다.");
+        }
+
+        productFolderRepository.save(new ProductFolder(product, folder));
+    }
 }
